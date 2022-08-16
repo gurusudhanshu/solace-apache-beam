@@ -33,6 +33,7 @@ import org.apache.beam.sdk.options.Default;
 import org.apache.beam.sdk.options.Description;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
+//import org.apache.beam.runners.dataflow.options.DataflowPipelineOptions;
 import org.apache.beam.sdk.transforms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,7 @@ import java.util.Map;
  * <p>
  */
 public class SolaceBigQuery {
-	private static final Logger LOG = LoggerFactory.getLogger(SolaceRecordTest.class);
+	private static final Logger LOG = LoggerFactory.getLogger(SolaceBigQuery.class);
 
 	public interface Options extends PipelineOptions {
 		@Description("IP and port of the client appliance. (e.g. -cip=192.168.160.101)")
@@ -108,22 +109,36 @@ public class SolaceBigQuery {
 		void setTimeout(int timeoutInMillis);
 
 		@Validation.Required
-        @Description("The name of the BigQuery project.")
-        String getBigQueryProject();
+		@Description("The name of the BigQuery project.")
+		String getBigQueryProject();
 
-        void setBigQueryProject(String value);
+		void setBigQueryProject(String value);
 
-        @Validation.Required
-        @Description("The name of BigQuery dataset which has the table you want to write data to.")
-        String getBigQueryDataset();
+		@Validation.Required
+		@Description("The name of BigQuery dataset which has the table you want to write data to.")
+		String getBigQueryDataset();
 
-        void setBigQueryDataset(String value);
+		void setBigQueryDataset(String value);
 
-        @Validation.Required
-        @Description("The name of BigQuery table you want to write data to.")
-        String getBigQueryTable();
+		@Validation.Required
+		@Description("The name of BigQuery table you want to write data to.")
+		String getBigQueryTable();
 
-        void setBigQueryTable(String value);
+		void setBigQueryTable(String value);
+
+
+		/*@Description("The Stage Location- Could Storage")
+		@Default.String("gs:/default")
+		String getStagingLocation();
+
+		void setStagingLocation(String value);*/
+
+		@Validation.Required
+		@Description("The temp Location- Could Storage")
+		String getTempLocation();
+
+
+		void setTempLocation(String value);
 
 	}
 
@@ -134,30 +149,15 @@ public class SolaceBigQuery {
 		boolean useSenderMsgId = options.getSmi();
 
 		TableSchema tableSchema = new TableSchema()
-						.setFields(Arrays.asList(
-								new TableFieldSchema().setName("date").setType("DATE").setMode("NULLABLE"),
-								new TableFieldSchema().setName("sym").setType("STRING").setMode("NULLABLE"),
-								new TableFieldSchema().setName("time").setType("TIME").setMode("NULLABLE"),
-								new TableFieldSchema().setName("lowAskSize").setType("INTEGER").setMode("NULLABLE"),
-								new TableFieldSchema().setName("highAskSize").setType("INTEGER").setMode("NULLABLE"),
-								new TableFieldSchema().setName("lowBidPrice").setType("FLOAT").setMode("NULLABLE"),
-								new TableFieldSchema().setName("highBidPrice").setType("FLOAT").setMode("NULLABLE"),
-								new TableFieldSchema().setName("lowBidSize").setType("INTEGER").setMode("NULLABLE"),
-								new TableFieldSchema().setName("highBidSize").setType("INTEGER").setMode("NULLABLE"),
-								new TableFieldSchema().setName("lowTradePrice").setType("FLOAT").setMode("NULLABLE"),
-								new TableFieldSchema().setName("highTradePrice").setType("FLOAT").setMode("NULLABLE"),
-								new TableFieldSchema().setName("lowTradeSize").setType("INTEGER").setMode("NULLABLE"),
-								new TableFieldSchema().setName("highTradeSize").setType("INTEGER").setMode("NULLABLE"),
-								new TableFieldSchema().setName("lowAskPrice").setType("FLOAT").setMode("NULLABLE"),
-								new TableFieldSchema().setName("highAskPrice").setType("FLOAT").setMode("NULLABLE"),
-								new TableFieldSchema().setName("vwap").setType("FLOAT").setMode("NULLABLE")));
+				.setFields(Arrays.asList(
+						new TableFieldSchema().setName("Line").setType("STRING").setMode("NULLABLE")));
 
 		// Insert information about your table (projectId, datasetId, and tableId)
-        TableReference tableSpec =
-                new TableReference()
-                        .setProjectId(options.getBigQueryProject())
-                        .setDatasetId(options.getBigQueryDataset())
-                        .setTableId(options.getBigQueryTable());
+		TableReference tableSpec =
+				new TableReference()
+						.setProjectId(options.getBigQueryProject())
+						.setDatasetId(options.getBigQueryDataset())
+						.setTableId(options.getBigQueryTable());
 
 		Pipeline pipeline = Pipeline.create(options);
 
@@ -168,10 +168,10 @@ public class SolaceBigQuery {
 		jcsmpProperties.setProperty(JCSMPProperties.PASSWORD, options.getCp());
 
 		/* The pipeline consists of three components:
-		* 1. Reading message from Solace queue
-		* 2. Transforming the message and mapping it to a BigQuery Table Row
-		* 3. Writing the row to BigQuery
-		*/
+		 * 1. Reading message from Solace queue
+		 * 2. Transforming the message and mapping it to a BigQuery Table Row
+		 * 3. Writing the row to BigQuery
+		 */
 		WriteResult input = pipeline
 				.apply(SolaceIO.read(jcsmpProperties, queues, SolaceTextRecord.getCoder(), SolaceTextRecord.getMapper())
 						.withUseSenderTimestamp(options.getSts())
@@ -184,44 +184,22 @@ public class SolaceBigQuery {
 						Map<String, String> parsedMap = new HashMap<String, String>();
 
 						// Clean up the payload so we can easily map the values into a HashMap
-						String[] pairs = c.element().getPayload().replace("[", "")
-								.replace("]", "")
-								.replace("{", "")
-								.replace("}", "")
-								.replace("\"", "").split(",");
+						String line = c.element().getPayload();
 
-						for (int i=0;i<pairs.length;i++) {
-							String pair = pairs[i];
-							String[] keyValue = pair.split(":");
-							parsedMap.put(keyValue[0], keyValue[1]);
-						}
+						/**transform your payload as per requirement here*/
+
 
 						TableRow row = new TableRow();
-						row.set("date", parsedMap.get("date"));
-						row.set("sym", parsedMap.get("sym"));
-						row.set("time", parsedMap.get("time"));
-						row.set("lowAskSize", Integer.parseInt(parsedMap.get("lowAskSize")));
-						row.set("highAskSize", Integer.parseInt(parsedMap.get("highAskSize")));
-						row.set("lowBidPrice", Float.parseFloat(parsedMap.get("lowBidPrice")));
-						row.set("highBidPrice", Float.parseFloat(parsedMap.get("highBidPrice")));
-						row.set("lowBidSize", Integer.parseInt(parsedMap.get("lowBidSize")));
-						row.set("highBidSize", Integer.parseInt(parsedMap.get("highBidSize")));
-						row.set("lowTradePrice", Float.parseFloat(parsedMap.get("lowTradePrice")));
-						row.set("highTradePrice", Float.parseFloat(parsedMap.get("highTradePrice")));
-						row.set("lowTradeSize", Integer.parseInt(parsedMap.get("lowTradeSize")));
-						row.set("highTradeSize", Integer.parseInt(parsedMap.get("highTradeSize")));
-						row.set("lowAskPrice", Float.parseFloat(parsedMap.get("lowAskPrice")));
-						row.set("highAskPrice", Float.parseFloat(parsedMap.get("highAskPrice")));
-						row.set("vwap", Float.parseFloat(parsedMap.get("vwap")));
+						row.set("line", line);
 						c.output(row);
 					}
 				}))
 
 				.apply("CommitToBQTable", BigQueryIO.writeTableRows()
-				.to(tableSpec)
-				.withSchema(tableSchema)
-				.withCreateDisposition(BigQueryIO.Write.CreateDisposition.CREATE_IF_NEEDED)
-				.withWriteDisposition(BigQueryIO.Write.WriteDisposition.WRITE_APPEND));
+						.to(tableSpec)
+						.withSchema(tableSchema)
+						.withCreateDisposition(BigQueryIO.Write.CreateDisposition.CREATE_IF_NEEDED)
+						.withWriteDisposition(BigQueryIO.Write.WriteDisposition.WRITE_APPEND));
 
 		PipelineResult result = pipeline.run();
 

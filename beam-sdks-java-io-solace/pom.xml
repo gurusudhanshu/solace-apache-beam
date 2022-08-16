@@ -28,6 +28,12 @@
 
 	<name>Apache Beam Solace PubSub+ I/O</name>
 	<description>Apache Beam I/O Component for Solace PubSub+</description>
+<properties>
+	<solace.integration.test.support.version>0.3.0</solace.integration.test.support.version>
+	<solace.integration.test.support.clone.skip>false</solace.integration.test.support.clone.skip>
+	<solace.integration.test.support.fetch_checkout.skip>false</solace.integration.test.support.fetch_checkout.skip>
+	<solace.integration.test.support.install.skip>true</solace.integration.test.support.install.skip>
+</properties>
 
 	<dependencies>
 		<dependency>
@@ -124,6 +130,7 @@
 		<dependency>
 			<groupId>com.solace.test.integration</groupId>
 			<artifactId>pubsubplus-testcontainer</artifactId>
+			<version>${solace.integration.test.support.version}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -136,7 +143,16 @@
 		<dependency>
 			<groupId>com.solace.test.integration</groupId>
 			<artifactId>solace-semp-v2-client</artifactId>
+			<version>${solace.integration.test.support.version}</version>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.solace.test.integration</groupId>
+			<artifactId>solace-integration-test-support-bom</artifactId>
+			<version>${solace.integration.test.support.version}</version>
+			<type>pom</type>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -169,6 +185,7 @@
 		<dependency>
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-runners-google-cloud-dataflow-java</artifactId>
+			<version>2.35.0</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
@@ -188,6 +205,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
@@ -197,31 +215,37 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.0.0-M5</version>
 			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>3.0.0-M5</version>
 			</plugin>
 
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.6</version>
 			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pmd-plugin</artifactId>
+				<version>3.14.0</version>
 			</plugin>
 
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
+				<version>4.3.0</version>
 			</plugin>
 
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>flatten-maven-plugin</artifactId>
+				<version>1.1.0</version>
 				<configuration>
 					<pomElements>
 						<profiles>remove</profiles>

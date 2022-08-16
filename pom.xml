@@ -73,6 +73,7 @@
   <modules>
     <module>beam-sdks-java-io-solace</module>
     <module>solace-apache-beam-samples</module>
+    <module>solace-integration-test-support</module>
   </modules>
 
   <dependencyManagement>
@@ -83,6 +84,12 @@
         <version>${beam.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>11.0.2</version>
       </dependency>
 
       <dependency>
@@ -107,13 +114,13 @@
         <scope>import</scope>
       </dependency>
 
-      <dependency>
+      <!--dependency>
         <groupId>com.solace.test.integration</groupId>
         <artifactId>solace-integration-test-support-bom</artifactId>
         <version>${solace.integration.test.support.version}</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>
+      </dependency-->
 
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -130,6 +137,7 @@
   </dependencyManagement>
 
   <build>
+
     <pluginManagement>
       <plugins>
         <plugin>
@@ -138,6 +146,7 @@
           <version>3.0.0-M5</version>
           <configuration>
             <rerunFailingTestsCount>5</rerunFailingTestsCount>
+
           </configuration>
         </plugin>
 
@@ -313,7 +322,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>1.6.0</version>
+        <version>3.0.0</version>
         <inherited>false</inherited>
         <executions>
           <execution>
@@ -508,4 +517,18 @@
       </plugin>
     </plugins>
   </reporting>
+<repositories>
+  <repository>
+    <id>Central Maven repository</id>
+    <name>Central Maven repository https</name>
+    <url>https://repo.maven.apache.org/maven2</url>
+    <releases><enabled>true</enabled><updatePolicy>always</updatePolicy></releases>
+  </repository>
+  <repository>
+    <id>Central Google repository</id>
+    <name>Central Google repository https</name>
+    <url>https://maven.google.com/</url>
+    <releases><enabled>true</enabled></releases>
+  </repository>
+</repositories>
 </project>
